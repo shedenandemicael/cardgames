@@ -2,7 +2,9 @@ from random import shuffle
 
 
 suits = ('diamond', 'heart', 'spade', 'club')
-numbers = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
+numbers = ('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
+handRanking = ('royal flush', 'straight flush', 'four of a kind', 'full house', 
+'flush', 'staight', 'three of a kind', 'two pair', 'pair', 'high card')
 currentBet = 0
 bigBlind = 20
 stackSize = 1000
@@ -25,26 +27,41 @@ def main():
     if players > 1:
         flop = deck[players * 2 + 1:players * 2 + 4]
         updateHands(hands, flop)
-        print(gradeHands(hands[0].hand))
-        print(hands[0].hand)
         player, players = placeBets(hands, player, players)
 
     # Betting on the turn
     if players > 1:
         turn = list(deck[players * 2 + 6])
-        print(turn)
         updateHands(hands, turn)
-        print(gradeHands(hands[0].hand))
-        print(hands[0].hand)
         player, players = placeBets(hands, player, players)
 
     # Betting on the river
     if players > 1:
         river = deck[players * 2 + 8]
         updateHands(hands, river)
-        print(gradeHands(hands[0].hand))
-        print(hands[0].hand)
         player, players = placeBets(hands, player, players)
+
+    playerGrades = []
+    tieBreaker = []
+    for hand in hands:
+        playerGrades.append(gradeHands(hand.hand)[0])
+        tieBreaker.append(gradeHands(hand.hand)[1])
+
+    tiedPlayers = [index for index, x in enumerate(playerGrades) if x == min(playerGrades)]
+    if len(tiedPlayers) == 1:
+        return tiedPlayers[0]
+    
+    winner = []
+    for p in tiedPlayers:
+        if len(winner) == 0:
+            winner.append(p)
+        elif tieBreaker[p] > tieBreaker[winner[0]]:
+            winner[0] = tieBreaker
+        elif tieBreaker[p] == tieBreaker[winner[0]]:
+            winner.append(tieBreaker[p])
+
+    return winner
+
 
 class Player:
 
@@ -149,9 +166,7 @@ def updateHands(hands, round):
 
 
 def gradeHands(hand):
-    
-    handRanking = ('royal flush', 'straight flush', 'four of a kind', 'full house', 
-    'flush', 'staight', 'three of a kind', 'two pair', 'pair', 'high card')
+
     suit = {}
     number = {}
     for card in hand:
@@ -179,36 +194,60 @@ def gradeHands(hand):
     if list(suitVal)[0] >= 5:
 
         if all(x in numKeys for x in ['T', 'J', 'Q', 'K', 'A']):
-            return "royal flush"
+            return 0, 12
 
         # Length of numbers - 4
         for i in range(9):
-            if all(x in numKeys for x in [numbers[i], numbers[i+1], numbers[i+2], numbers[i+3], numbers[i+4]]):
-                return "straight flush"
+            straightLength = 0
+            for x in [numbers[i], numbers[i+1], numbers[i+2], numbers[i+3], numbers[i+4]]:
+                if x in numKeys:
+                    straightLength += 1
+            if straightLength == 5:
+                return 1, numbers.index(numbers[i+4])
     
+    # Four of a kind
     if numVal[0] == 4:
-        return "four of a kind"
+        return 2, numbers.index(numKeys[0])
 
+    # Full house
     if all(x in numVal for x in [3, 4]):
-        return "full house"
+        return 3, numbers.index(numKeys[0])
 
+    # Flush
     if suitVal[0] >= 5:
-        return "flush"
+        return 4, numbers.index(numKeys[0])
 
+    # Straight
     for i in range(9):
-            if all(x in numKeys for x in [numbers[i], numbers[i+1], numbers[i+2], numbers[i+3], numbers[i+4]]):
-                return "straight"
+            straightLength = 0
+            for x in [numbers[i], numbers[i+1], numbers[i+2], numbers[i+3], numbers[i+4]]:
+                if x in numKeys:
+                    straightLength += 1
+            if straightLength == 5:
+                return 5, numbers.index(numbers[i+4])
 
+    # Three of a kind
     if 3 in numVal:
-        return "three of a kind"
+        return 6, numbers.index(numKeys[0])
     
+    # Two pair
     if numVal[0] == 2 and numVal[1] == 2:
-        return "two pair"
+        if numbers.index(numKeys[0]) > numbers.index(numKeys[1]):
+            return 7, numbers.index(numKeys[0])
+        else:
+            return 7, numbers.index(numKeys[1])
 
+    # Pair
     if 2 in numVal:
-        return "pair"
+        return 8, numbers.index(numKeys[0])
 
-    return "high card"
+    # High card
+    highCard = 0
+    for num in numKeys:
+        if numbers.index(num) > highCard:
+            highCard = numbers.index(num)
+    return 9, highCard
+
 
 if __name__ == '__main__':
     main()
