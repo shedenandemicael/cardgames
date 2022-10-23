@@ -1,0 +1,43 @@
+/* #hands {
+  height: 20%;
+  margin: -10px;
+  position: absolute;
+  top: 80%;
+  width: 100%;
+}
+
+.hand {
+  color: white;
+  display: inline-block;
+  font-size: 50px;
+  height: 100%;
+  text-align: center;
+  width: 20%;
+}
+
+.navbar {
+  font-size: 30px;
+  padding: 1rem;
+}
+
+a, a:hover {
+  color: white;
+  text-decoration: none;
+}
+
+#title {
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+body {
+  background: black url("/public/pokertable.jpeg") no-repeat fixed center;
+  background-size: 100% 60%;
+}
+
+#community-cards {
+  flex: auto;
+  align-items: center;
+  justify-content: center;
+  top: 42%;
+} */
